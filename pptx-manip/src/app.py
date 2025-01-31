@@ -1,15 +1,9 @@
 from flask import Flask, render_template, request, send_file, jsonify
 from pptx import Presentation
-import os
+import io
 import zipfile
 
-app = Flask(__name__)
-
-UPLOAD_FOLDER = "uploads"
-OUTPUT_FOLDER = "output"
-
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-os.makedirs(OUTPUT_FOLDER, exist_ok=True)
+app = Flask(__name__, static_folder="static", template_folder="templates")
 
 @app.route("/", methods=["GET"])
 def index():
@@ -24,39 +18,36 @@ def split_pptx():
     if file.filename == "":
         return jsonify({"error": "Nenhum arquivo selecionado"}), 400
 
-    filepath = os.path.join(UPLOAD_FOLDER, file.filename)
-    file.save(filepath)
+    prs = Presentation(file)
 
-    # Carregar apresentação
-    prs = Presentation(filepath)
-
-    # Coletar intervalos de slides e nomes de arquivos
     slide_ranges = request.form.getlist("slideRanges[]")
     file_names = request.form.getlist("fileNames[]")
     slide_ranges = [tuple(map(int, r.split("-"))) for r in slide_ranges]
 
-    zip_path = os.path.join(OUTPUT_FOLDER, "arquivos_divididos.zip")
+    # Criar um arquivo ZIP em memória
+    zip_buffer = io.BytesIO()
 
-    with zipfile.ZipFile(zip_path, "w") as zipf:
+    with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zipf:
         for i, (start, end) in enumerate(slide_ranges):
             new_prs = Presentation()
 
-            # Copiar slides no intervalo especificado
             for j in range(start - 1, end):
-                slide_layout = new_prs.slide_layouts[0]  # Mantendo um layout básico
+                slide_layout = new_prs.slide_layouts[0]
                 new_slide = new_prs.slides.add_slide(slide_layout)
 
                 for shape in prs.slides[j].shapes:
                     if hasattr(shape, "text"):
                         new_slide.shapes.title.text = shape.text
 
-            output_filename = f"{file_names[i]}.pptx"
-            output_path = os.path.join(OUTPUT_FOLDER, output_filename)
-            new_prs.save(output_path)
+            output_pptx = io.BytesIO()
+            new_prs.save(output_pptx)
+            output_pptx.seek(0)
 
-            zipf.write(output_path, arcname=output_filename)
+            zipf.writestr(f"{file_names[i]}.pptx", output_pptx.getvalue())
 
-    return send_file(zip_path, as_attachment=True)
+    zip_buffer.seek(0)
+
+    return send_file(zip_buffer, mimetype="application/zip", as_attachment=True, download_name="arquivos_divididos.zip")
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, host="0.0.0.0", port=5000)
