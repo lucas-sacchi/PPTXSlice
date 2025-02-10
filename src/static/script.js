@@ -29,7 +29,7 @@ function executeSplit(event) {
     
     let alertBox = document.getElementById("alertBox");
     alertBox.style.display = "none";
-    alertBox.innerHTML = ""; // Limpa qualquer mensagem anterior
+    alertBox.innerHTML = "";
 
     let formData = new FormData();
     let fileInput = document.getElementById("file");
