@@ -3,7 +3,7 @@
 
 **Link: https://pptxslice.onrender.com**
 
-Este projeto é uma aplicação web desenvolvida com **Flask** no backend e **HTML, CSS e JavaScript** no frontend. Ele permite que os usuários façam **upload de um arquivo PowerPoint**, escolham em **quantas partes** desejam dividi-lo e façam o **download automático dos arquivos gerados**.
+Este projeto é uma aplicação web desenvolvida com **Flask** no backend e **HTML, CSS e JavaScript** no frontend. Ele permite que os usuários façam **upload de um arquivo PowerPoint**, escolham em **quantas partes** desejam dividi-lo e façam o **download automático dos arquivos gerados. Essa tarefa é frequentemente utilizada no meu ambiente de trabalho devido a grandes quantidades de relatórios e a necessidade de envio de partes para outros setores**.
 
 ## 🚀 Funcionalidades
 
